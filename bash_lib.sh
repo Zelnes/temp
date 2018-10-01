@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 
-alias parse_log="eval \$verbosity echo"
-# alias parse_log="echo"
+parse_log() {
+  [ "${PARSE_VERBOSE}" != "y" ] || echo "$@"
+}
 
 # $1 : option needed
 # $2 : command line
@@ -31,9 +32,6 @@ parse_args() {
   # Set to 1 if $1 needs to be saved in PA_R
   local save
 
-  local verbosity=:
-  [ "${PARSE_VERBOSE}" = "y" ] && verbosity=""
-
   unset PA_AO PA_R
   declare -Ag PA_AO
   declare -g PA_R
@@ -52,6 +50,7 @@ parse_args() {
     keep=0
     case "$cur" in
       --)
+        parse_log "Option '--' found, saving all others into PA_R..."
         shift
         while [[ $# -ne 0 ]]; do
           PA_R+=" '$1'"; shift
@@ -62,15 +61,16 @@ parse_args() {
         read curO curV <<<$(parse_args_get_opt_val "$cur" "$options")
         if [[ -z "$curO" ]]; then
           cso="$1"
+          parse_log "The option '$cso' has not been given a sense, keep it"
           save=1
         else
-          parse_log "long option $cur : needed by $curO $curV"
+          parse_log -n "long option $cur "
           if [[ -z "$curV" ]]; then
             PA_AO["$curO"]=1
-            parse_log "empty"
+            parse_log " with no argument"
             shift
           else
-            parse_log "filled"
+            parse_log "needed under the variable '$curV', with value '$val'"
             eval declare -g \"$curV="$val"\"
             shift $toshift
           fi
@@ -86,14 +86,16 @@ parse_args() {
         }
         read curO curV <<<$(parse_args_get_opt_val "$cso" "$options")
         if [[ -z "$curO" ]]; then
+          parse_log "The option '$cso' has not been given a sense, keep it"
           save=1
         else
-          parse_log "short option $cur $2"
+          parse_log -n "short option $cur "
           if [[ -z "$curV" ]]; then
             PA_AO["$curO"]=1
-            parse_log "empty"
+            parse_log " with no argument"
             [ "$keep" = 1 ] || shift
           else
+            parse_log " needed under the variable '$curV', with value '$val'"
             eval declare -g \"$curV="$val"\"
             shift $toshift
           fi
@@ -102,13 +104,17 @@ parse_args() {
         ;;
       * )
         cso="$1"
+        parse_log "The value '$cso' is kept"
         save=1
-        parse_log "value $1"
         shift
         ;;
     esac
     [ "$save" = "1" ] && PA_R+=" '$cso'"
   done
+
+  parse_log -e "\n=== Checking Global vars"
+  parse_log "PA_AO : ${!PA_AO[@]}"
+  parse_log "PA_R  : ${PA_R}"
 }
 
 echo_vars() {
@@ -116,9 +122,6 @@ echo_vars() {
   for i in $@; do
     eval echo \"$i = \'\${$i}\'\"
   done
-  echo -e "\n=== Checking Global vars"
-  echo "PA_AO : ${!PA_AO[@]}"
-  echo "PA_R  : ${PA_R}"
 }
 
 test_func() {
