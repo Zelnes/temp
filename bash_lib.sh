@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-# alias parse_log="eval \$verbosity echo"
-alias parse_log="echo"
+alias parse_log="eval \$verbosity echo"
+# alias parse_log="echo"
 
 # $1 : option needed
 # $2 : command line
@@ -31,8 +31,8 @@ parse_args() {
   # Set to 1 if $1 needs to be saved in PA_R
   local save
 
-  local verbosity
-  [ "${PARSE_VERBOSE}" != "y" ] && verbosity='&>/dev/null'
+  local verbosity=:
+  [ "${PARSE_VERBOSE}" = "y" ] && verbosity=""
 
   unset PA_AO PA_R
   declare -Ag PA_AO
