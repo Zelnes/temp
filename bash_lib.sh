@@ -6,7 +6,7 @@ alias parse_log="echo"
 # $1 : option needed
 # $2 : command line
 parse_args_get_opt_val() {
-  echo "$2" | grep -Eo "[-]${1:1}[^[:blank:]]*" | sed 's/=/ /'
+  sed -nr "s/.*-${1:1}(=?([^[:blank:]]*)).*/$1 \2/p" <<<"$2"
 }
 
 # PA_AO
@@ -51,6 +51,12 @@ parse_args() {
     }
     keep=0
     case "$cur" in
+      --)
+        shift
+        while [[ $# -ne 0 ]]; do
+          PA_R+=" '$1'"; shift
+        done
+      ;;
       --* )
         # set -x
         read curO curV <<<$(parse_args_get_opt_val "$cur" "$options")
