@@ -61,16 +61,16 @@ parse_args() {
         read curO curV <<<$(parse_args_get_opt_val "$cur" "$options")
         if [[ -z "$curO" ]]; then
           cso="$1"
-          parse_log "The option '$cso' has not been given a sense, keep it"
+          parse_log "Long option '$cso' saved"
           save=1
         else
-          parse_log -n "long option $cur "
+          parse_log -n "Long option '$cur' "
           if [[ -z "$curV" ]]; then
             PA_AO["$curO"]=1
-            parse_log " with no argument"
+            parse_log
             shift
           else
-            parse_log "needed under the variable '$curV', with value '$val'"
+            parse_log "=> $curV='$val'"
             eval declare -g \"$curV="$val"\"
             shift $toshift
           fi
@@ -86,16 +86,16 @@ parse_args() {
         }
         read curO curV <<<$(parse_args_get_opt_val "$cso" "$options")
         if [[ -z "$curO" ]]; then
-          parse_log "The option '$cso' has not been given a sense, keep it"
+          parse_log -en "Short option '$cso' saved"
           save=1
         else
-          parse_log -n "short option $cur "
+          parse_log -n "Short option '$cur' "
           if [[ -z "$curV" ]]; then
             PA_AO["$curO"]=1
-            parse_log " with no argument"
+            parse_log
             [ "$keep" = 1 ] || shift
           else
-            parse_log " needed under the variable '$curV', with value '$val'"
+            parse_log "=> $curV='$val'"
             eval declare -g \"$curV="$val"\"
             shift $toshift
           fi
@@ -104,7 +104,7 @@ parse_args() {
         ;;
       * )
         cso="$1"
-        parse_log "The value '$cso' is kept"
+        parse_log "Value '$cso' saved"
         save=1
         shift
         ;;
