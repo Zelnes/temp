@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-parse_log() {
+parse_args_logger() {
   [ "${PARSE_VERBOSE}" != "y" ] || echo "$@"
 }
 
@@ -36,7 +36,7 @@ parse_args() {
   declare -Ag PA_AO
   declare -g PA_R
 
-  parse_log $options
+  parse_args_logger $options
   while [[ $# -ne 0 ]]; do
     save=0
     toshift=1
@@ -50,7 +50,7 @@ parse_args() {
     keep=0
     case "$cur" in
       --)
-        parse_log "Option '--' found, saving all others into PA_R..."
+        parse_args_logger "Option '--' found, saving all others into PA_R..."
         shift
         while [[ $# -ne 0 ]]; do
           PA_R+=" '$1'"; shift
@@ -61,16 +61,16 @@ parse_args() {
         read curO curV <<<$(parse_args_get_opt_val "$cur" "$options")
         if [[ -z "$curO" ]]; then
           cso="$1"
-          parse_log "Long option '$cso' saved"
+          parse_args_logger "Long option '$cso' saved"
           save=1
         else
-          parse_log -n "Long option '$cur' "
+          parse_args_logger -n "Long option '$cur' "
           if [[ -z "$curV" ]]; then
             PA_AO["$curO"]=1
-            parse_log
+            parse_args_logger
             shift
           else
-            parse_log "=> $curV='$val'"
+            parse_args_logger "=> $curV='$val'"
             eval declare -g \"$curV="$val"\"
             shift $toshift
           fi
@@ -86,16 +86,16 @@ parse_args() {
         }
         read curO curV <<<$(parse_args_get_opt_val "$cso" "$options")
         if [[ -z "$curO" ]]; then
-          parse_log -en "Short option '$cso' saved"
+          parse_args_logger -en "Short option '$cso' saved"
           save=1
         else
-          parse_log -n "Short option '$cur' "
+          parse_args_logger -n "Short option '$cur' "
           if [[ -z "$curV" ]]; then
             PA_AO["$curO"]=1
-            parse_log
+            parse_args_logger
             [ "$keep" = 1 ] || shift
           else
-            parse_log "=> $curV='$val'"
+            parse_args_logger "=> $curV='$val'"
             eval declare -g \"$curV="$val"\"
             shift $toshift
           fi
@@ -104,7 +104,7 @@ parse_args() {
         ;;
       * )
         cso="$1"
-        parse_log "Value '$cso' saved"
+        parse_args_logger "Value '$cso' saved"
         save=1
         shift
         ;;
@@ -112,9 +112,9 @@ parse_args() {
     [ "$save" = "1" ] && PA_R+=" \"$cso\""
   done
 
-  parse_log -e "\n=== Checking Global vars"
-  parse_log "PA_AO : ${!PA_AO[@]}"
-  parse_log "PA_R  : ${PA_R}"
+  parse_args_logger -e "\n=== Checking Global vars"
+  parse_args_logger "PA_AO : ${!PA_AO[@]}"
+  parse_args_logger "PA_R  : ${PA_R}"
 }
 
 echo_vars() {
