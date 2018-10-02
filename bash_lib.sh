@@ -109,7 +109,7 @@ parse_args() {
         shift
         ;;
     esac
-    [ "$save" = "1" ] && PA_R+=" '$cso'"
+    [ "$save" = "1" ] && PA_R+=" \"$cso\""
   done
 
   parse_log -e "\n=== Checking Global vars"
@@ -131,5 +131,5 @@ test_func() {
 }
 
 call_func() {
-   test_func -p porte quelquechose --verbose "Oui on peut" --autre="ca marche ca" --alone -y -e "Voila ce que je te dis"
+   test_func -p porte -e quelquechose --verbose "Oui on peut" --autre="ca marche ca" --alone -y -e "Voila ce que je te dis"
 }
