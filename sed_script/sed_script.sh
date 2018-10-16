@@ -15,19 +15,25 @@ color() {
 }
 
 # Definition of all the lists and their format :
-LIST=
+# LIST=
 # *_L : list for * regex
 # *_LF : list for * regex flags (see sed substitute flags)
 # *_C : color for * list
 # *_F : format for * list
-# ERROR list
-LIST+="ERR "; ERR_L="error|warning"; ERR_C=C_RED; ERR_F=; ERR_LF="Ig"
-# COMMON list
-LIST+="CMN "; CMN_L="make\[[0-9]*]"; CMN_C=C_BLUE; CMN_F=F_BOLD
-# Test list
-LIST+="TST "; TST_L="jolitest"; TST_C=C_RED; TST_F=
-# Test list
-LIST+="TST2 "; TST2_L="jolitest2"; TST2_C=C_BLUE; TST2_F=F_BOLD
+load_cf() {
+	LIST=""
+
+	# ERROR list
+	LIST+="ERR "; ERR_L="error|warning"; ERR_C=C_RED; ERR_F=; ERR_LF="Ig"
+	# COMMON list
+	LIST+="CMN "; CMN_L="make\[[0-9]*]"; CMN_C=C_BLUE; CMN_F=F_BOLD
+	# Test list
+	LIST+="TST "; TST_L="jolitest"; TST_C=C_RED; TST_F=
+	# Test list
+	LIST+="TST2 "; TST2_L="jolitest2"; TST2_C=C_BLUE; TST2_F=F_BOLD
+
+	source $ADD_FILE
+}
 
 readonly SCRIPT_BASE=/tmp/sed_tail/scripts
 readonly SCRIPT_FILE=$SCRIPT_BASE/script
@@ -91,8 +97,13 @@ generate_script() {
 		echo "s${s}($(clean_regex "$file"))${s}$(color $c $f)${s}$(clean_flags "$file")" >>"$SCRIPT_FILE"
 	done
 }
-sort_by_cf
-generate_script
-sed -rf "$SCRIPT_FILE" "$@"
 
+reload_engine() {
+	load_cf
+	sort_by_cf
+	generate_script
+	sed -rf "$SCRIPT_FILE" "$@"
+}
+
+reload_engine "$@"
 set +x
