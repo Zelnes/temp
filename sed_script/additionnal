@@ -1,7 +1,0 @@
-# TST2
-LIST+="TST2 "
-TST2_L="jolitest2"
-TST2_C=C_BLUE
-TST2_F=F_BOLD
-TST2_LF=
-# ;;
