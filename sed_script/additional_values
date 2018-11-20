@@ -1,0 +1,14 @@
+# MakeVarParam
+LIST+="MakeVarParam "
+MakeVarParam_L="([[:blank:]][^-][[:graph:]]+=|^[^-[:blank:]=]+=)"
+MakeVarParam_C=
+MakeVarParam_F=F_BOLD
+MakeVarParam_LF=g
+
+# IncludeReps
+LIST+="IncludeReps "
+IncludeReps_L="-I[^[:blank:]]+"
+IncludeReps_C=C_BLUE
+IncludeReps_F=F_UNDER
+IncludeReps_LF=g
+
