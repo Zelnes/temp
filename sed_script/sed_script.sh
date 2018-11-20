@@ -25,7 +25,7 @@ load_cf() {
 	LIST=""
 
 	# ERROR list
-	LIST+="ERR "; ERR_L="error|warning"; ERR_C=C_RED; ERR_F=; ERR_LF="Ig"; ERR_O=99
+	LIST+="ERR "; ERR_L="error|warning|No such file or directory"; ERR_C=C_RED; ERR_F=; ERR_LF="Ig"; ERR_O=99
 	# COMMON list
 	LIST+="CMN "; CMN_L="make\[[0-9]*]"; CMN_C=C_BLUE; CMN_F=F_BOLD
 	# Test list
@@ -103,9 +103,13 @@ generate_script() {
 }
 
 reload_engine() {
+	local f
 	load_cf
 	sort_by_cf
 	generate_script
+	for f in "$@"; do
+		[ -e "$f" ] || touch "$f"
+	done
 	tail -f "$@" | sed -rf "$SCRIPT_FILE"
 }
 
