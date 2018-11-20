@@ -20,11 +20,12 @@ color() {
 # *_LF : list for * regex flags (see sed substitute flags)
 # *_C : color for * list
 # *_F : format for * list
+# *_O : order for * list
 load_cf() {
 	LIST=""
 
 	# ERROR list
-	LIST+="ERR "; ERR_L="error|warning"; ERR_C=C_RED; ERR_F=; ERR_LF="Ig"
+	LIST+="ERR "; ERR_L="error|warning"; ERR_C=C_RED; ERR_F=; ERR_LF="Ig"; ERR_O=99
 	# COMMON list
 	LIST+="CMN "; CMN_L="make\[[0-9]*]"; CMN_C=C_BLUE; CMN_F=F_BOLD
 	# Test list
@@ -32,8 +33,11 @@ load_cf() {
 	# Test list
 	LIST+="TST2 "; TST2_L="jolitest2"; TST2_C=C_BLUE; TST2_F=F_BOLD
 
+	LIST+="ERR2 "; ERR2_L="^.*([0-9]+:){2}[[:blank:]]*(error|warning):"; ERR2_C=C_RED; ERR2_F=F_BOLD; ERR2_LF="I"
+
 	source $ADD_FILE
 }
+
 
 readonly SCRIPT_BASE=/tmp/sed_tail/scripts
 readonly SCRIPT_FILE=$SCRIPT_BASE/script
@@ -45,7 +49,7 @@ sort_by_cf() {
 	for i in $LIST; do
 		eval l=\${${i}_L}
 		eval c=\${${i}_C:-C_DEFAULT}
-		eval f=\${${i}_F:-F_DEFAULT}
+		eval f=\${${i}_O:-"00"}_\${${i}_F:-F_DEFAULT}
 		eval flags=\${${i}_LF}
 		mkdir -p $FMT_BASE/$c
 		echo "$l" >>$FMT_BASE/$c/$f
@@ -78,7 +82,7 @@ generate_script() {
 	# Separator for the
 	local sep s
 	rm "$SCRIPT_FILE"
-	find $FMT_BASE -type f -not -name "*.flags" | awk -F"/" '{print $0, $(NF-1), $NF}' | \
+	find $FMT_BASE -type f -not -name "*.flags" | awk -F"/" '{print $0, $(NF-1), substr($NF,4)}' | \
 	while read file c f; do
 		# Search for an intelligent separator
 		s=nothing
@@ -102,7 +106,7 @@ reload_engine() {
 	load_cf
 	sort_by_cf
 	generate_script
-	sed -rf "$SCRIPT_FILE" "$@"
+	tail -f "$@" | sed -rf "$SCRIPT_FILE"
 }
 
 reload_engine "$@"
