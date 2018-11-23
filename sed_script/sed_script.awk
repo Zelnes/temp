@@ -66,7 +66,8 @@ function flush_to_file(FN,  k, a, line, e) {
   if(length(FN) == 0)
     FN = DAF
 
-  printf("") >FN
+  "realpath " FN | getline FN
+
   for(k in LADD) {
     e = LADD[k]
     line=""
