@@ -80,7 +80,7 @@ function flush_to_file(FN,  k, a, line, e) {
   printf("Result written in %s !\n", FN)
 }
 
-function print_all_from(a, k) {
+function print_all_from(a,  k) {
   for (k in a)
     printf("%s : %s\n", k, a[k])
 }
@@ -121,6 +121,7 @@ function print_menu() {
   print "\tq : Quit"
   print "\tl (color|format|record) : list what is given (empty for all)"
   print "\ta <Record_Name> : adds or updates (if exists) the given record"
+  print "\td <Record_Name> : deletes the given record"
   printf("\tcommit <file> : Commit all records to the file (default to '%s' if empty)", DAF)
   print ""
 }
@@ -192,6 +193,32 @@ function menu_add(rn,  rg, sf, c, f, ae, is_ok, k) {
   register_new_element(rn, rg, sf, c, f)
 }
 
+function menu_del(rn,  k) {
+  if(length(rn) == 0) {
+    printf("List of records deletable\n")
+    print_all_from(LADD)
+    printf("Please provide a name for the record to delete : ")
+    getline rn
+  }
+
+  for(k = 1; k <= length(LADD); ++k) {
+      if(LADD[k] == rn)
+        break;
+  }
+
+  if(k > length(LADD)) {
+    printf("The specified record doesn't exist!\n\n")
+  }
+  else {
+    printf("Deleting record '%s'", rn)
+    delete ADD[rn, "L"]
+    delete ADD[rn, "C"]
+    delete ADD[rn, "F"]
+    delete ADD[rn, "LF"]
+    delete LADD[k]
+  }
+}
+
 function menu_list(action, rn,  k) {
   print "\n=================="
   switch(action) {
@@ -229,6 +256,9 @@ function main() {
         break
       case "a":
         menu_add($2)
+        break
+      case "d":
+        menu_del($2)
         break
       case "commit":
         flush_to_file($2)
