@@ -2,6 +2,10 @@
 
 # set -x
 readonly FMT_FILE=format_list.sh
+readonly PID_FILE=/tmp/.pid_sed_script
+# This variable is set to 0 if inotifywait isn't present
+# it enables the auto reload behaviour
+DO_RELOAD=1
 source "${FMT_FILE}"
 
 # This function generates the replacement string for sed, assuming it replaces
@@ -77,11 +81,10 @@ clean_flags() {
 }
 
 generate_script() {
-	# set -x
 	local c f file regex
 	# Separator for the
 	local sep s
-	rm "$SCRIPT_FILE"
+	rm -f "$SCRIPT_FILE"
 	find $FMT_BASE -type f -not -name "*.flags" | awk -F"/" '{print $0, $(NF-1), substr($NF,4)}' | \
 	while read file c f; do
 		# Search for an intelligent separator
@@ -100,6 +103,7 @@ generate_script() {
 		eval f=\$$f
 		echo "s${s}($(clean_regex "$file"))${s}$(color $c $f)${s}$(clean_flags "$file")" >>"$SCRIPT_FILE"
 	done
+	set +x
 }
 
 reload_engine() {
@@ -110,8 +114,44 @@ reload_engine() {
 	for f in "$@"; do
 		[ -e "$f" ] || touch "$f"
 	done
-	tail -f "$@" | sed -rf "$SCRIPT_FILE"
+	(tail -f "$@" & echo $! >&3) 3>"$PID_FILE" | sed -rf "$SCRIPT_FILE"
 }
 
-reload_engine "$@"
+prereq() {
+	which inotifywait &>/dev/null || {
+		echo "You need to install inotifywait if you want to experience"
+		echo "auto reload of script when its conf is updated :"
+		echo "sudo apt install inotify-tools"
+		DO_RELOAD=0
+	}
+}
+
+kill_tail() {
+	[ -f "$PID_FILE" ] && {
+		kill "$(cat "$PID_FILE")"
+		rm -f "$PID_FILE"
+	}
+}
+
+clean_exit() {
+	kill_tail
+}
+
+main() {
+	trap clean_exit INT
+	prereq
+	if [ "$DO_RELOAD" = 1 ]; then
+		reload_engine "$@" &
+		inotifywait -mq -e modify "$ADD_FILE" | \
+		while read line; do
+			kill $(cat "$PID_FILE")
+			reload_engine "$@" &
+		done
+	else
+		reload_engine "$@"
+	fi
+	clean_exit
+}
+
+main "$@"
 set +x
