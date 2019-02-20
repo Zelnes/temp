@@ -31,25 +31,26 @@ function load_file(FN,  rs, fs, ladd, rn) {
   delete LADD
   while(( getline <FN) > 0 ) {
     rn = substr($1, 3)
-    ADD[rn, "L"]  = after_equal($3)
-    ADD[rn, "C"]  = after_equal($4)
-    ADD[rn, "F"]  = after_equal($5)
-    ADD[rn, "LF"] = after_equal($6)
+    ADD[rn, "C"]  = after_equal($3)
+    ADD[rn, "F"]  = after_equal($4)
+    ADD[rn, "LF"] = after_equal($5)
     ladd=ladd rn SUBSEP
   }
   close(FN)
-  RS=rs; FS=fs
   # Split returns the number of elements found. As there's an extra SUBSEP, we
   # don't need to keep the last LADD element, so we delete it on the fly
   delete LADD[split(ladd, LADD, SUBSEP)]
-  if(DBG == 1) {
-    print_all_from(ADD)
-    print_all_from(LADD)
+
+  for(ladd in LADD)
+  {
+    rn = FN "." LADD[ladd]
+    getline ADD[LADD[ladd], "L"] < rn
   }
+  RS=rs; FS=fs
 }
 
 function print_record(rn,  line) {
-  gsub(/(^"|"$)/, "", ADD[rn, "L"])
+  # gsub(/(^"|"$)/, "", ADD[rn, "L"])
   line=line sprintf("%s_L=\"%s\"\n",  rn, ADD[rn, "L"])
   line=line sprintf("%s_C=%s\n",  rn, ADD[rn, "C"])
   line=line sprintf("%s_F=%s\n",  rn, ADD[rn, "F"])
