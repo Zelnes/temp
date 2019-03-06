@@ -21,17 +21,28 @@ BEGIN {
 		}
 		else if(!repo && match($i, /Subject: [^ ]+ -/)) {
 			repo = substr($i, RSTART + SUBJECTLEN, RLENGTH - SUBJECTLEN - 2)
+			header = substr($i, RSTART + RLENGTH + 1)
+			gsub(/[[:blank:]]*\nContent-Type.*/, "", header)
+			gsub(/\n/, "", header)
+			header = gensub(/#[0-9]+:/, repo ":", 1, header)
 		}
 		# printf("--%s\n", $i)
 	}
 }
 
+# do_exit == 1 { exit }
+
+# /exfat/ {
+# 	do_exit = 1
+# }
+
+# Process mails that are about marking a PR
+# It is supposed to deal with (dis)approval and needs work
 /marked the pull request as/ {
 
 	match($0, /((UN)?APPROVED|NEEDS WORK)/)
 	mark = substr($0, RSTART, RLENGTH)
 
-	header = sprintf("Pull Request on %s", repo)
 	body = sprintf("%s marked PR as %s", author, mark)
 
 	# print author
@@ -40,6 +51,22 @@ BEGIN {
 	# print header
 	# print body
 	# exit
+	notif()
+	next
+}
+
+# Process mails that are about joining as reviewer
+/joined as a reviewer/ {
+	body = sprintf("%s is now reviewing", author)
+	notif()
+	next
+}
+
+# Process mails that are about leaving as reviewer
+/is no longer a reviewer/ {
+	body = sprintf("%s is not reviewing anymore", author)
+	notif()
+	next
 }
 
 function notif() {
