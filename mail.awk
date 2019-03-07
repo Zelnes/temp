@@ -1,19 +1,31 @@
 BEGIN {
 	RS="(\n|)From -"
 	FS="[<>]"
-	lastRT = ""
-	idx = 1
 	SUBJECTLEN = length("Subject: ")
+	initVars()
+	# lastRT = ""
+	# idx = 1
 }
 
-# By default
-{
+function initVars() {
+	treated = 0 # Is the current record already treated
 	header = "Unknown type"
 	body = "Unknown reason"
 	author = ""
 	mark = ""
 	repo = ""
-	for (i = 1; i < NF; ++i) {
+}
+
+function notif() {
+	print header
+	print body
+	print "=============="
+}
+
+# By default
+{
+	initVars()
+	for (i = 1; i <= NF; ++i) {
 		if(!author && $i ~ /author-name/) {
 			author=$(i + 1)
 			# Deal with Raphael's name
@@ -38,7 +50,8 @@ BEGIN {
 
 # Process mails that are about marking a PR
 # It is supposed to deal with (dis)approval and needs work
-/marked the pull request as/ {
+treated != 1 && /marked the pull request as/ {
+	treated = 1
 
 	match($0, /((UN)?APPROVED|NEEDS WORK)/)
 	mark = substr($0, RSTART, RLENGTH)
@@ -51,28 +64,43 @@ BEGIN {
 	# print header
 	# print body
 	# exit
-	notif()
-	next
 }
 
 # Process mails that are about joining as reviewer
-/joined as a reviewer/ {
+treated != 1 && /joined as a reviewer/ {
+	treated = 1
 	body = sprintf("%s is now reviewing", author)
-	notif()
-	next
 }
 
 # Process mails that are about leaving as reviewer
-/is no longer a reviewer/ {
+treated != 1 && /is no longer a reviewer/ {
+	treated = 1
 	body = sprintf("%s is not reviewing anymore", author)
-	notif()
-	next
 }
 
-function notif() {
-	print header
-	print body
-	print "=============="
+treated != 1 && /added a comment/ {
+	treated = 1
+	lookAuthor = 0
+	body = sprintf("%s added a comment", author)
+	for(i = 1; i <= NF; ++i) {
+		if($i ~ /In reply to/) {
+			lookAuthor = 1
+			continue
+		}
+		if(lookAuthor == 1 && $i ~ /author-name/)
+			{
+			body = sprintf("%s replied to %s", author, $(i + 1))
+			break
+		}
+	}
+}
+
+treated != 1 && /commented on line/ {
+	treated = 1
+	match($0, /commented on line.*<\/strong>/)
+	s = substr($0, RSTART, RLENGTH)
+	gsub(/<[^>]+>/, "", s)
+	body = sprintf("%s %s", author, s)
 }
 
 {
