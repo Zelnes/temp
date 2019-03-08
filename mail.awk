@@ -22,6 +22,8 @@ function notif() {
 	print "=============="
 }
 
+do_exit == 1 { exit }
+
 # By default
 {
 	initVars()
@@ -42,8 +44,6 @@ function notif() {
 	}
 }
 
-# do_exit == 1 { exit }
-
 # /exfat/ {
 # 	do_exit = 1
 # }
@@ -57,13 +57,6 @@ treated != 1 && /marked the pull request as/ {
 	mark = substr($0, RSTART, RLENGTH)
 
 	body = sprintf("%s marked PR as %s", author, mark)
-
-	# print author
-	# print mark
-	# print repo
-	# print header
-	# print body
-	# exit
 }
 
 # Process mails that are about joining as reviewer
@@ -101,6 +94,32 @@ treated != 1 && /commented on line/ {
 	s = substr($0, RSTART, RLENGTH)
 	gsub(/<[^>]+>/, "", s)
 	body = sprintf("%s %s", author, s)
+}
+
+treated != 1 && /MERGED/ {
+	treated = 1
+	body = sprintf("%s merged the PR", author)
+}
+
+treated != 1 && /LIKED/ {
+	treated = 1
+	match($0, /<b>[^<]+/)
+	body = sprintf("%s liked your comment", substr($0, RSTART + 3, RLENGTH - 3))
+}
+
+treated != 1 && /DECLINED/ {
+	treated = 1
+	body = sprintf("%s declined the PR", author)
+}
+
+treated != 1 && /added you as a reviewer/ {
+	treated = 1
+	body = sprintf("%s created a PR with you as a reviewer", author)
+}
+
+treated != 1 && /pushed changes to/ {
+	treated = 1
+	body = sprintf("%s updated the PR", author)
 }
 
 {
