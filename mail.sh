@@ -8,30 +8,30 @@
 # 	echo "$key : $val"
 # done >/tmp/mon.log
 
-readonly 
-readonly THUNDERBIRD=$(find "${HOME}" -name ".thunderbird")
+readonly THUNDERBIRD=$(find "${HOME}" -maxdepth 3 -name ".thunderbird")
 
 readonly PROF_NAME=$1
 shift
 
 prof_name() {
-	awk -v p="${PROF_NAME}"
-	'BEGIN {
-		RS="\n\n"
-		FS="[\n=]"
-	}
-	$0 ~ "Name=" p {
-		for (i = 1; i <= NF; i++)
-			if ($i == "Path") {
-				print $(i+1)
-				exit
-			}
-		}
-	' "${THUNDERBIRD}/profiles.ini"
+  awk -v p="${PROF_NAME}" '
+  BEGIN {
+    RS="\n\n"
+    FS="[\n=]"
+  }
+  $0 ~ "Name=" p {
+    for (i = 1; i <= NF; i++)
+      if ($i == "Path") {
+        print $(i+1)
+        exit
+      }
+    }
+  ' "${THUNDERBIRD}/profiles.ini"
 }
 
 readonly PROF_PATH="${THUNDERBIRD}/$(prof_name)"
-
+echo "${PROF_NAME}" >>/tmp/mon.log
+echo "${PROF_PATH}" >>/tmp/mon.log
 i=1
 
 while [ $i -le $# ]; do
