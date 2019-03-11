@@ -1,7 +1,13 @@
+
+
 BEGIN {
 	RS="(\n|)From -"
 	FS="[<>]"
 	SUBJECTLEN = length("Subject: ")
+	if(!subject) {
+		print "Error : subject must be given!"
+		exit 1
+	}
 	initVars()
 	# lastRT = ""
 	# idx = 1
@@ -17,12 +23,14 @@ function initVars() {
 }
 
 function notif() {
-	print header
-	print body
-	print "=============="
+	printf("%s__sep__%s\n", header, body)
 }
 
-do_exit == 1 { exit }
+$0 !~ subject {
+	next
+}
+
+# do_exit == 1 { exit }
 
 # By default
 {
