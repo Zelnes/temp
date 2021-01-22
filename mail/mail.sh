@@ -19,6 +19,8 @@ shift
 # Subject of the mail given with %folde by Alert Mail
 readonly SUBJECT="$1"
 shift
+readonly SIZE="$1"
+shift
 
 prof_name() {
   awk -v p="${PROF_NAME}" '
@@ -53,7 +55,9 @@ readonly FOLDERS="$(find ${PROF_PATH} -not -type d -name "${SRC_FOLDER}*" -not -
 # for i in $@; do
 # 	echo -n "$i - "
 # done >>/tmp/mon.log
-
+echo "$SUBJECT" >>/tmp/mon.log
+echo "$SIZE" >>/tmp/mon.log
+sed ':a s/\r//g; /=$/{N; s/=\n//; ta}' "${FOLDERS}" | awk -f mail.awk -v subject="${SUBJECT}" >>/tmp/mon.log
 # echo "==========" >>/tmp/mon.log
 i=0
 sed ':a s/\r//g; /=$/{N; s/=\n//; ta}' "${FOLDERS}" | awk -f mail.awk -v subject="${SUBJECT}" | while read line; do
