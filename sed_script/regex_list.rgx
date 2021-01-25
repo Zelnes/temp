@@ -1,0 +1,28 @@
+# GccMacros
+LIST+="GccMacros "
+GccMacros_L='-D([^ ]+|[^ "]*"([^\"]*[\]"|[^"]*)*[^\]")'
+GccMacros_C=C_ORANGE
+GccMacros_F=
+GccMacros_LF=g
+
+# MakeVarParam
+LIST+="MakeVarParam "
+MakeVarParam_L="([[:blank:]]\<[[:alnum:]_]+\>=|^[^-[:blank:]=]+=)"
+MakeVarParam_C=
+MakeVarParam_F=F_BOLD
+MakeVarParam_LF=g
+
+# IncludeReps
+LIST+="IncludeReps "
+IncludeReps_L="-I[^[:blank:]]+"
+IncludeReps_C=C_BLUE
+IncludeReps_F=F_UNDER
+IncludeReps_LF=g
+
+
+# IncludeFiles
+LIST+="IncludeFiles "
+IncludeFiles_L="-include[[:blank:]]+[^[:blank:]]+"
+IncludeFiles_C=C_GREEN
+IncludeFiles_F=F_UNDER
+IncludeFiles_LF=g
