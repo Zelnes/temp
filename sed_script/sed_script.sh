@@ -31,17 +31,13 @@ load_cf() {
 	# ERROR list
 	LIST+="ERR "; ERR_L="error|warning|No such file or directory"; ERR_C=C_RED; ERR_F=; ERR_LF="Ig"; ERR_O=99
 	# COMMON list
-	LIST+="CMN "; CMN_L="make\[[0-9]*]"; CMN_C=C_BLUE; CMN_F=F_BOLD
-	# Test list
-	LIST+="TST "; TST_L="jolitest"; TST_C=C_RED; TST_F=
-	# Test list
-	LIST+="TST2 "; TST2_L="jolitest2"; TST2_C=C_BLUE; TST2_F=F_BOLD
+	LIST+="MAKE "; MAKE_L="make\[[0-9]*]"; MAKE_C=C_BLUE; MAKE_F=F_BOLD
 
 	LIST+="ERR2 "; ERR2_L="^.*([0-9]+:){2}[[:blank:]]*(error|warning):"; ERR2_C=C_RED; ERR2_F=F_BOLD; ERR2_LF="I"
 
-	source $ADD_FILE
+	touch "$ADD_FILE"
+	source "$ADD_FILE"
 }
-
 
 readonly SCRIPT_BASE=/tmp/sed_tail/scripts
 readonly SCRIPT_FILE=$SCRIPT_BASE/script
@@ -77,7 +73,7 @@ clean_regex() {
 # ex : $1=F_DEFAULT -> cleans the F_DEFAULT.flags file
 clean_flags() {
 	local f=$1.flags
-	cat $f | grep -o . | sort -u | tr -d '\n'
+	grep -o . "$f" | sort -u | tr -d '\n'
 }
 
 generate_script() {
@@ -96,12 +92,13 @@ generate_script() {
 			}
 		done
 		if [ "$s" = "nothing" ]; then
+			s=","
 			echo "Warning : there's no intelligent separator for the sed substitute."
 			echo "Using '$s'"
 		fi
-		eval c=\$$c
-		eval f=\$$f
-		echo "s${s}($(clean_regex "$file"))${s}$(color $c $f)${s}$(clean_flags "$file")" >>"$SCRIPT_FILE"
+		c=${!c}
+		f=${!f}
+		echo "s${s}($(clean_regex "$file"))${s}$(color "$c" "$f")${s}$(clean_flags "$file")" >>"$SCRIPT_FILE"
 	done
 	set +x
 }

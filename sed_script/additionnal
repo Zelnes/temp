@@ -1,5 +1,0 @@
-# MakeVarParam
-LIST+="MakeVarParam "
-MakeVarParam_C=
-MakeVarParam_F=F_BOLD
-MakeVarParam_LF=g

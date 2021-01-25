@@ -5,9 +5,9 @@
 # Each record has 6 fields :
 #  1 : The record name RCN
 #  2 : LIST+="RCN "
-#  3 : *_L the regex list
-#  4 : *_C the regex color
-#  5 : *_F the regex format
+#  3 : *_L the regex
+#  4 : *_C the regex output color
+#  5 : *_F the regex output format
 #  6 : *_LF the regex sed's flag
 
 # This function returns the right part of the "=" sign
@@ -17,7 +17,7 @@ function after_equal(line) {
 
 # This function loads the given file and fills the next associative array :
 # ADD for which each key is a record name
-# For each record there are 4 fiels :
+# For each record there are 4 fields :
 #  L  : the record regex
 #  C  : the color
 #  F  : the format
@@ -273,7 +273,7 @@ BEGIN {
   # Additionnal Record Separator
   ARS=""
   # Default additionnal file
-  DAF="additionnal"
+  DAF="regex_list.rgx"
   # DBG=1
   retrieve_available_fmts("format_list.sh")
   load_file(DAF)

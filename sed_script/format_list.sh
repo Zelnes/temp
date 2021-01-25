@@ -19,4 +19,4 @@ readonly F_INV=7
 
 readonly F_DEFAULT=${F_NORMAL}
 
-readonly ADD_FILE=additional_values
+readonly ADD_FILE=regex_list.rgx
